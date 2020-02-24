@@ -17,8 +17,8 @@ angular.module('todoApp', ['ngRoute', 'AdalAngular'])
         adalProvider.init(
             {
                 instance: 'https://login.microsoftonline.com/',
-                tenant: 'cirrusplcs.onmicrosoft.com',
-                clientId: '86cdbd02-dba5-4920-ba3a-120b97fc948b',
+                tenant: '<TENANT_ID',
+                clientId: '<CLIENT_ID>',
                 extraQueryParameter: 'nux=1',
                 cacheLocation: 'localStorage',
                 postLogoutRedirectUri: 'http://localhost:8080/logout',
