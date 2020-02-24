@@ -1,0 +1,94 @@
+This code is an extension of the original sample provided by MS Azure here
+https://github.com/microsoft/azure-spring-boot/tree/master/azure-spring-boot-samples
+
+But the main problem with that sample is that it runs the client app and the server as a single unit. The js code runs from Tomcat.
+Which is not how most of the actual systems would ever run. And once you separate them out and the domains change the initial
+setup just doesn't work. 
+
+
+What's in the code:
+
+    The default configuration uses a HTTP Filter AADAuthenticationFilter.java. This filter calles AAD (Azure Active Directory) for 
+each request for validating the token. But in addition it makes another call to the MS GraphAPI to get the "user groups" that the current
+user belongs to. This filter expects session cookies to be enabled and stores  its data in the cookies for each request.
+
+The solution to this is to configure AADAppRoleStatelessAuthenticationFilter.java in the WebSecurityConfig.java and in 
+'application.properties' configure the property "azure.activedirectory.session-stateless=true". This would still call the AD
+for token validation but it does not make the second call to get groups. This API expects the roles to be defined as "app-roles"
+in the AD manifest file. (Links below on how to configure groups, roles and other AD setup)
+
+NOTE: The WebSecurityConfig.java for thie sample completely disables csrf because otherwise these filters don't work as client
+and server app running on separate ports are different domains and thus they cannot set or read cookies or state.
+
+How to use:
+
+  Azure AD Configuration:
+    You can follow this blog https://dev.to/azure/using-spring-security-with-azure-active-directory-mga to do the setup.
+    But remember this will not be enough when you configure the stateless filter mentioned above. 
+    To configure app-roles follow the second part (starts at 18.45) of this video: https://www.youtube.com/watch?v=V8VUPixLSiM
+
+
+Java App build and run:
+
+    THe code-base contains two folders one is a spring boot project which compiles independently and the other is an agular client 
+    (This is angular 1.0, as I have only extracted the code given in the original samples for now). 
+
+      Go to azure-active-directory-spring-boot-sample dir and run
+      > mvn clean install
+  
+      to run the compiled code you can use STS or just run using maven with following command
+      > mvn spring-boot:run
+      this will start the sptring boot on 8080
+  
+     Currently this app is configured to run with the context 'myapp'. You can change it to use any name you like by changing it
+     in the application.properties
+     
+ Running the Angular client:
+ 
+      go to ad-spring-boot-client dir and run below command to install a basic http server
+      > npm i http-server
+      
+      once installed just execute below command from the same directory
+      > hs . (remember the dot at the end. On Mac if you have npm installed using brew you need to run /usr/local/Cellar/node/9.5.0/bin/hs)
+       
+      This will start the server on port 8081
+      
+      
+Now if you go to a browser at localhost:8081 . (or the port you used on client http server) and login using a user you would have
+created on the AD server you should be able to login and see the user details by clicking on the 'User' link.
+Make sure you are able to add a new TODO list item in the demo.
+
+
+Note:
+I had to add an nginx proxy server in between the client and server before I completely disabled csrf to make both the apps 
+be accessible using same domain. The nginx config looks like below:
+
+in the nginx.conf (again on Mac its at /usr/local/etc/nginx/nginx.conf
+
+-------------------------------------------------------------------------------------
+server {
+        listen          9999;
+        server_name     myapp.in;
+        location / {
+            proxy_pass http://localhost:8081;
+        }
+
+        location /cirrus {
+            proxy_pass http://localhost:8080;
+        }
+
+    }
+
+-------------------------------------------------------------------------------------
+
+
+ 
+ 
+ 
+
+
+
+
+
+
+
