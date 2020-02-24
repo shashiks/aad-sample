@@ -44,6 +44,9 @@ Java App build and run:
      in the application.properties
      
  Running the Angular client:
+    
+      You will need a few code changes, as right now I haven't spent time on making it flexible. You will need to modify the 'todoListSvc.js'
+      to point to the correct url as per your setup. 
  
       go to ad-spring-boot-client dir and run below command to install a basic http server
       > npm i http-server
